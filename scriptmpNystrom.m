@@ -194,9 +194,9 @@ nud = n*mp(2^(-53),64);
 nus = n*mp(2^(-24),64);
 nuh = n*mp(2^(-11),64);
 
-boundfin_d = n^(3/2)*(nud/(1-nud))*normAlist;
-boundfin_s = n^(3/2)*(nus/(1-nus))*normAlist;
-boundfin_h = n^(3/2)*(nuh/(1-nuh))*normAlist(1:halfind);
+boundfin_d = n^(1/2)*(nud/(1-nud))*normAlist;
+boundfin_s = n^(1/2)*(nus/(1-nus))*normAlist;
+boundfin_h = n^(1/2)*(nuh/(1-nuh))*normAlist(1:halfind);
 
 % k=1:9
 figure;
