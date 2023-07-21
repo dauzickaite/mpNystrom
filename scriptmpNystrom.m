@@ -23,6 +23,8 @@ normAlist = [1e0,1e1,1e2,1e3,1e4,1e5,1e6,1e7,1e8,1e9,1e10,1e11,1e12,...
 
 norm_count = length(normAlist);
 
+normAlistF = zeros(norm_count,1);
+
 nystr_error_mean = zeros(loop_ind,norm_count);
 nystr_error_std = zeros(loop_ind,norm_count);
 
@@ -72,7 +74,7 @@ for normA = normAlist
 
        case 'poldecay'
              % polynomial decay
-            p = 2; % rate of decay: 0.5 slow, 1 med, 2 fast 
+            p = 1; % rate of decay: 0.5 slow, 1 med, 2 fast 
             row = 1:n;
             col = 1:n;
             val = [normA*ones(1,R), (2:(n-R+1)).^(-p)];
@@ -80,6 +82,7 @@ for normA = normAlist
 
     end
 
+    normAlistF(normind) = norm(A,'fro');
 
     if max(max(A)) < 6.5*1e4
         halfOn = true;
@@ -112,45 +115,45 @@ for normA = normAlist
         for rndseed = 1:rnd_runs
             rnd_ind = rnd_ind+1;
 
-            fprintf('rank of approximation: %d \n, rnd run: %d \n',k,rndseed)    
+            fprintf('rank of approximation: %d \n, rnd run: %d \n',k,rndseed,true)    
             fprintf('hig precision: 64 digits \n')
-            [U, Lambda] = NystromSketch(mp(A), n, k+l, 'd',rndseed,true);
+            [U, Lambda] = NystromSketch(mp(A), n, k+l, 'd',rndseed,true,true);
             U = U(:,1:k);
             Lambda = Lambda(1:k,1:k);  
             A_nyst = U*Lambda*U';
 
-            nystr_error(rndseed,ind) = norm(mp(A) - mp(A_nyst));
+            nystr_error(rndseed,ind) = norm(mp(A) - mp(A_nyst),'fro');
 
             % double precision AQ
             fprintf('double precis. approx \n')
-            [Ud, Lambdad, AQd] = NystromSketch(A, n, k+l, 'd',rndseed, false);
+            [Ud, Lambdad, AQd] = NystromSketch(A, n, k+l, 'd',rndseed, false,true);
             Ud = Ud(:,1:k);
             Lambdad = Lambdad(1:k,1:k);
             A_nystd = Ud*Lambdad*Ud';
-            error_double(rndseed,ind) = norm(mp(A_nyst) - mp(A_nystd));
-            error_tot_double(rndseed,ind) = norm(mp(A) - mp(A_nystd));
+            error_double(rndseed,ind) = norm(mp(A_nyst) - mp(A_nystd),'fro');
+            error_tot_double(rndseed,ind) = norm(mp(A) - mp(A_nystd),'fro');
 
 
             if singleOn
             % single precision A*G
                 fprintf('single precis. approx \n')
-                [Us, Lambdas, AQs] = NystromSketch(A, n, k+l, 's',rndseed,false);
+                [Us, Lambdas, AQs] = NystromSketch(A, n, k+l, 's',rndseed,false,true);
                 Us = Us(:,1:k);
                 Lambdas = Lambdas(1:k,1:k);
                 A_nysts = Us*Lambdas*Us';
-                error_single(rndseed,ind) = norm(mp(A_nyst) - mp(A_nysts));
-                error_tot_single(rndseed,ind) = norm(mp(A) - mp(A_nysts));
+                error_single(rndseed,ind) = norm(mp(A_nyst) - mp(A_nysts),'fro');
+                error_tot_single(rndseed,ind) = norm(mp(A) - mp(A_nysts),'fro');
             end
 
             if halfOn
                 % half precision A*G
                 fprintf('half precis. approx \n')
-                [Uh, Lambdah, AQh] = NystromSketch(A, n, k+l,'h',rndseed,false);
+                [Uh, Lambdah, AQh] = NystromSketch(A, n, k+l,'h',rndseed,false,true);
                 Uh = Uh(:,1:k);
                 Lambdah = Lambdah(1:k,1:k);
                 A_nysth = Uh*Lambdah*Uh';    
-                error_half(rndseed,ind) = norm(mp(A_nyst) - mp(A_nysth));
-                error_tot_half(rndseed,ind) = norm(mp(A) - mp(A_nysth));
+                error_half(rndseed,ind) = norm(mp(A_nyst) - mp(A_nysth),'fro');
+                error_tot_half(rndseed,ind) = norm(mp(A) - mp(A_nysth),'fro');
             end
         end
     end
@@ -194,9 +197,9 @@ nud = n*mp(2^(-53),64);
 nus = n*mp(2^(-24),64);
 nuh = n*mp(2^(-11),64);
 
-boundfin_d = n^(1/2)*(nud/(1-nud))*normAlist;
-boundfin_s = n^(1/2)*(nus/(1-nus))*normAlist;
-boundfin_h = n^(1/2)*(nuh/(1-nuh))*normAlist(1:halfind);
+boundfin_d = (nud/(1-nud))*normAlistF;
+boundfin_s = (nus/(1-nus))*normAlistF;
+boundfin_h = (nuh/(1-nuh))*normAlistF(1:halfind);
 
 % k=1:9
 figure;
@@ -230,11 +233,11 @@ for j=ind_st:ind_end
         'Color',[0.4940 0.1840 0.5560],'LineWidth',10); hold on
 end
 
-semilogy(0:length(boundfin_d)-1,boundfin_d,':','Color',[0.8500 0.3250 0.0980],...
+semilogy(0:length(boundfin_d)-1,sqrt(k-1)*boundfin_d,':','Color',[0.8500 0.3250 0.0980],...
     'LineWidth',10); hold on
-semilogy(0:length(boundfin_s)-1,boundfin_s,':','Color',[0.9290 0.6940 0.1250],...
+semilogy(0:length(boundfin_s)-1,sqrt(k-1)*boundfin_s,':','Color',[0.9290 0.6940 0.1250],...
     'LineWidth',10); hold on
-semilogy(0:length(boundfin_h)-1,boundfin_h,':','Color',[0.4940 0.1840 0.5560],...
+semilogy(0:length(boundfin_h)-1,sqrt(k-1)*boundfin_h,':','Color',[0.4940 0.1840 0.5560],...
     'LineWidth',10); hold on
 
 xlim([0,16])
@@ -274,11 +277,11 @@ for j=ind_st:ind_end
         'Color',[0.4940 0.1840 0.5560],'LineWidth',10); hold on
 end
 
-semilogy(0:length(boundfin_d)-1,boundfin_d,':','Color',[0.8500 0.3250 0.0980],...
+semilogy(0:length(boundfin_d)-1,sqrt(k)*boundfin_d,':','Color',[0.8500 0.3250 0.0980],...
     'LineWidth',10); hold on
-semilogy(0:length(boundfin_s)-1,boundfin_s,':','Color',[0.9290 0.6940 0.1250],...
+semilogy(0:length(boundfin_s)-1,sqrt(k)*boundfin_s,':','Color',[0.9290 0.6940 0.1250],...
     'LineWidth',10); hold on
-semilogy(0:length(boundfin_h)-1,boundfin_h,':','Color',[0.4940 0.1840 0.5560],...
+semilogy(0:length(boundfin_h)-1,sqrt(k)*boundfin_h,':','Color',[0.4940 0.1840 0.5560],...
     'LineWidth',10); hold on
 
 

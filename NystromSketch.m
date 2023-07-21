@@ -1,4 +1,4 @@
-function [U, Lambda, Y, Go] = NystromSketch(A, n, l, mvp, rndseed,mpon)
+function [U, Lambda, Y, Go] = NystromSketch(A, n, l, mvp, rndseed,mpon,sketchOrth)
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 % Returns n x l orthogonal matrix U and an l x l diagonal matrix Lambda
@@ -14,11 +14,17 @@ else
     G = randn(n,l);
 end
 
-[Go,~] = qr(G,0); 
+if sketchOrth   
+    [Go,~] = qr(G,0); 
+else
+    Go = G;
+end
 
 
 if mvp == 'd'
     Y = A*Go;
+elseif mvp == 's'
+    Y = single(full(A))*Go;
 else
     opt.format = mvp;
     chop([],opt)
@@ -41,7 +47,13 @@ elseif strcmp(mvp, 'q52')
     shiftc = 0.5;
 end
 
-shift = shiftc*norm(Y);
+% trA = trace(A);
+%  shift = shiftc*trA;
+
+shift = shiftc*norm(Y,'fro'); 
+fprintf('shift %2.2e \n',shift)
+
+
 Ys = Y + shift*Go;
 B = Go'*Ys;
 C = chol((B+B')*0.5);
