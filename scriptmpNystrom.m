@@ -6,7 +6,7 @@ addpath '/Users/id1917/Documents/MATLAB/AdvanpixMCT-4.8.5.14607'
 
 mp.Digits(64);
 
-example = 'poldecay'; % choose the problem
+example = 'psdNoise'; % choose the problem
 n = 1e2; % size of A
 R = 10;  % effective rank A (n-R eigenvalues decay rapidly)
 
@@ -220,7 +220,8 @@ end
 xlim([0,16])
 xticks([0 4 9 16])
 xticklabels({'10^0','10^4','10^9', '10^{16}'})
-ylim([1e-20 1e20])
+ylim([1e-17 1e17])
+yticks([1e-15 1e-10 1e-5 1e0 1e5 1e10 1e15])
 set(gca, 'fontsize',60);
 
 figure;
@@ -243,6 +244,8 @@ semilogy(0:length(boundfin_h)-1,sqrt(k-1)*boundfin_h,':','Color',[0.4940 0.1840 
 xlim([0,16])
 xticks([0 4 9 16])
 xticklabels({'10^0','10^4','10^9', '10^{16}'})
+ylim([1e-17 1e17])
+yticks([1e-15 1e-10 1e-5 1e0 1e5 1e10 1e15])
 set(gca, 'fontsize',60);
 
 % k=10
@@ -264,7 +267,8 @@ end
 xlim([0,16])
 xticks([0 4 9 16])
 xticklabels({'10^0','10^4','10^9', '10^{16}'})
-ylim([1e-20 1e20])
+ylim([1e-17 1e17])
+yticks([1e-15 1e-10 1e-5 1e0 1e5 1e10 1e15])
 set(gca, 'fontsize',60);
 
 figure;
@@ -288,6 +292,8 @@ semilogy(0:length(boundfin_h)-1,sqrt(k)*boundfin_h,':','Color',[0.4940 0.1840 0.
 xlim([0,16])
 xticks([0 4 9 16])
 xticklabels({'10^0','10^4','10^9', '10^{16}'})
+ylim([1e-17 1e17])
+yticks([1e-15 1e-10 1e-5 1e0 1e5 1e10 1e15])
 set(gca, 'fontsize',60);
 
 
